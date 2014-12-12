@@ -1,0 +1,18 @@
+--- wscript.bak	2014-12-05 15:24:11.160903895 +0000
++++ wscript	2014-12-05 15:24:55.376903867 +0000
+@@ -639,6 +639,7 @@
+         'helper/ccn-client-helper.cc',
+         'helper/linux-stack-helper.cc',
+         'helper/freebsd-stack-helper.cc',
++        'helper/mpdd-helper.cc',
+         ]
+     module_headers = [
+         'model/dce-manager.h',
+@@ -670,6 +671,7 @@
+         'helper/ipv4-dce-routing-helper.h',
+         'helper/linux-stack-helper.h',
+         'helper/freebsd-stack-helper.h',
++        'helper/mpdd-helper.h',
+         ]
+ 
+     module_source = module_source + kernel_source
