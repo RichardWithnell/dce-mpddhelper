@@ -160,6 +160,44 @@ MpddHelper::InstallInNode (Ptr<Node> node, int copy, std::string id)
           CopyRealFileToVirtual (nodeId, (*iter).first, (*iter).second);
       }
       return DceApplicationHelper::InstallInNode (node);
+    } else if(copy == 2) {
+      int nodeId = node->GetId ();
+      std::stringstream oss;
+      std::stringstream outFile;
+      oss << "files-" << nodeId << "/var/run";
+      UtilsEnsureDirectoryExists (oss.str ());
+      oss.str(std::string());
+
+      outFile << "files-" << nodeId;
+      UtilsEnsureDirectoryExists(outFile.str());
+
+      outFile << "/etc/";
+      UtilsEnsureDirectoryExists(outFile.str());
+
+      outFile << "mpd/";
+      UtilsEnsureDirectoryExists(outFile.str());
+      outFile << "mpdd.conf";
+      oss << id << "-" << nodeId << std::endl;
+      if(dissList.size() > 0){
+        for(int i = 0; i < dissList.size(); i++){
+          if(i == dissList.size()-1){
+            oss << dissList.at(i) << std::endl;
+          } else {
+            oss << dissList.at(i) <<  ",";
+          }
+        }
+      }
+      if(ignoreList.size() > 0){
+        for(int i = 0; i < ignoreList.size(); i++){
+          if(i == ignoreList.size()-1){
+            oss <<  ignoreList.at(i) << std::endl;
+          } else {
+            oss <<  ignoreList.at(i) << ",";
+          }
+        }
+      }
+
+      WriteStrToVirtualFile(nodeId, oss.str(), outFile.str());
     } else {
       return DceApplicationHelper::InstallInNode (node);
     }
