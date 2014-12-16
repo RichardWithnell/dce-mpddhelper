@@ -207,8 +207,6 @@ MpddHelper::WriteStrToVirtualFile (int nodeId, std::string content, std::string 
         UtilsEnsureAllDirectoriesExist (vto);
     }
 
-    std::cout << "OUT: " << to.c_str() << std::endl;
-
     std::ofstream outFile (to.c_str (), std::fstream::trunc | std::fstream::binary);
     outFile << content;
     outFile.close();
