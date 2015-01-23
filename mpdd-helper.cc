@@ -140,66 +140,118 @@ MpddHelper::Install (NodeContainer c, int copy, std::string id)
 ApplicationContainer
 MpddHelper::InstallInNode (Ptr<Node> node, int copy, std::string id)
 {
+    int nodeId = node->GetId ();
+
+
     if(copy == 1){
-      NS_LOG_FUNCTION (this);
-      ApplicationContainer apps;
-      int nodeId = node->GetId ();
-      std::stringstream oss;
+        NS_LOG_FUNCTION (this);
+        ApplicationContainer apps;
+        std::stringstream oss;
+        oss << "files-" << nodeId << "/var/run";
+        UtilsEnsureDirectoryExists (oss.str ());
+        oss.str(std::string());
 
-      oss << "files-" << nodeId;
-      UtilsEnsureDirectoryExists (oss.str ());
+        oss << "files-" << nodeId;
+        UtilsEnsureDirectoryExists (oss.str ());
 
-      oss << "/etc/";
-      UtilsEnsureDirectoryExists (oss.str ());
+        oss << "/etc/";
+        UtilsEnsureDirectoryExists (oss.str ());
 
-      oss << "mpd/";
-      UtilsEnsureDirectoryExists (oss.str ());
-      oss << "mpdd.conf";
-      std::vector <std::pair <std::string, std::string> >::iterator iter;
-      for (iter = m_files.begin (); iter != m_files.end (); ++iter) {
-          CopyRealFileToVirtual (nodeId, (*iter).first, (*iter).second);
-      }
-      return DceApplicationHelper::InstallInNode (node);
-    } else if(copy == 2) {
-      int nodeId = node->GetId ();
-      std::stringstream oss;
-      std::stringstream outFile;
-      oss << "files-" << nodeId << "/var/run";
-      UtilsEnsureDirectoryExists (oss.str ());
-      oss.str(std::string());
+        oss << "mpd";
+        UtilsEnsureDirectoryExists (oss.str ());
+        std::vector <std::pair <std::string, std::string> >::iterator iter;
 
-      outFile << "files-" << nodeId;
-      UtilsEnsureDirectoryExists(outFile.str());
-
-      outFile << "/etc/";
-      UtilsEnsureDirectoryExists(outFile.str());
-
-      outFile << "mpd/";
-      UtilsEnsureDirectoryExists(outFile.str());
-      outFile << "mpdd.conf";
-      oss << id << "-" << nodeId << std::endl;
-      if(dissList.size() > 0){
-        for(int i = 0; i < dissList.size(); i++){
-          if(i == dissList.size()-1){
-            oss << dissList.at(i) << std::endl;
-          } else {
-            oss << dissList.at(i) <<  ",";
-          }
+        for (iter = m_files.begin (); iter != m_files.end (); ++iter){
+            CopyRealFileToVirtual (nodeId, (*iter).first, (*iter).second);
         }
-      }
-      if(ignoreList.size() > 0){
-        for(int i = 0; i < ignoreList.size(); i++){
-          if(i == ignoreList.size()-1){
-            oss <<  ignoreList.at(i) << std::endl;
-          } else {
-            oss <<  ignoreList.at(i) << ",";
-          }
-        }
-      }
+        return DceApplicationHelper::Install (node);
+    } else if(copy == 0){
+        std::stringstream oss;
+        std::stringstream outFile;
+        oss << "files-" << nodeId << "/var/run";
+        UtilsEnsureDirectoryExists (oss.str ());
+        oss.str(std::string());
+        outFile << "files-" << nodeId;
+        UtilsEnsureDirectoryExists(outFile.str());
 
-      WriteStrToVirtualFile(nodeId, oss.str(), outFile.str());
+        outFile << "/etc/";
+        UtilsEnsureDirectoryExists(outFile.str());
+
+        outFile << "mpd/";
+        UtilsEnsureDirectoryExists(outFile.str());
+        outFile << "mpdd.conf";
+        oss << "version = \"0.10\";" << std::endl;
+        oss << "host_id = \"" << id << "-" << nodeId << "\";" << std::endl;
+        oss << "application:" << std::endl;
+        oss << "{" << std::endl;
+        oss << "\thost = true;" << std::endl;
+        if(dissList.size() > 0){
+            oss << "\tdissemination = [" << std::endl;
+            for(int i = 0; i < dissList.size(); i++){
+                if(i == dissList.size()-1){
+                    oss << "\t\t\"" << dissList.at(i) <<  "\"" << std::endl;
+                } else {
+                    oss << "\t\t\"" << dissList.at(i) <<  "\"," << std::endl;
+                }
+            }
+            oss << "\t];\n" << std::endl;
+        }
+        if(ignoreList.size() > 0){
+            oss << "\tignore = [" << std::endl;
+            for(int i = 0; i < ignoreList.size(); i++){
+                if(i == ignoreList.size()-1){
+                    oss << "\t\t\"" << ignoreList.at(i) <<  "\"" << std::endl;
+                } else {
+                    oss << "\t\t\"" << ignoreList.at(i) <<  "\"," << std::endl;
+                }
+            }
+            oss << "\t];\n" << std::endl;
+        }
+        oss << "};" << std::endl;
+
+        WriteStrToVirtualFile(nodeId, oss.str(), outFile.str());
+        return DceApplicationHelper::Install (node);
     } else {
-      return DceApplicationHelper::InstallInNode (node);
+        std::cout << "Creating mpdd.conf\n";
+        std::stringstream oss;
+        std::stringstream outFile;
+
+        oss << "files-" << nodeId << "/var/run";
+        UtilsEnsureDirectoryExists (oss.str ());
+        oss.str(std::string());
+
+        outFile << "files-" << nodeId;
+        UtilsEnsureDirectoryExists(outFile.str());
+
+        outFile << "/etc/";
+        UtilsEnsureDirectoryExists(outFile.str());
+
+        outFile << "mpd/";
+        UtilsEnsureDirectoryExists(outFile.str());
+        outFile << "mpdd.conf";
+        oss << id << "-" << nodeId << std::endl;
+        if(dissList.size() > 0){
+            for(int i = 0; i < dissList.size(); i++){
+                if(i == dissList.size()-1){
+                    oss << dissList.at(i) << std::endl;
+                } else {
+                    oss << dissList.at(i) <<  ",";
+                }
+            }
+        }
+        if(ignoreList.size() > 0){
+            for(int i = 0; i < ignoreList.size(); i++){
+                if(i == ignoreList.size()-1){
+                    oss <<  ignoreList.at(i) << std::endl;
+                } else {
+                    oss <<  ignoreList.at(i) << ",";
+                }
+            }
+        }
+
+        WriteStrToVirtualFile(nodeId, oss.str(), outFile.str());
+
+        return DceApplicationHelper::Install (node);
     }
 }
 
